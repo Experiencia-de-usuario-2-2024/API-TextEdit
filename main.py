@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from deep_translator import GoogleTranslator
+from fastapi.middleware.cors import CORSMiddleware
 
 from transformers import pipeline
 import asyncio
@@ -23,6 +24,20 @@ classifier = pipeline("text-classification", model="bhadresh-savani/bert-base-un
 
 # Configuración del cliente de OpenAI
 api_key = os.getenv("OPENAI_API_KEY")
+
+# Configuración de CORS
+origins = [
+    "http://localhost:3001",
+    # Añade aquí otros orígenes que necesites permitir
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Modelos para la entrada de datos
 class SentimentRequest(BaseModel):
