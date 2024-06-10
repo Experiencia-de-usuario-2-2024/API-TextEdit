@@ -12,6 +12,8 @@ from openai import OpenAI
 import json
 from fastapi.responses import JSONResponse
 
+import re
+
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
 
@@ -59,7 +61,7 @@ class ClassificationRequest(BaseModel):
 
 class ElementInfoRequest(BaseModel):
     texto: str
-    
+
 
 @app.get("/", summary="Saludo y Enlace a la Documentación", description="Proporciona un enlace directo a la documentación de la API para obtener más información sobre los endpoints disponibles y su uso.")
 def read_root(request: Request):
@@ -89,7 +91,6 @@ async def analyze_sentiment(request: SentimentRequest):
 
     return {"sentiment": sentiment, "score": score}
 
-# Define el endpoint para analizar emociones
 # Define el endpoint para analizar emociones
 @app.post("/emotions", summary="Analizar Emociones", description="Analiza las emociones en un texto en español.")
 async def analyze_emotions(request: EmotionRequest):
@@ -160,57 +161,6 @@ async def classify_text(request: ClassificationRequest):
 
     return result
 
-
-@app.post("/infoElement", summary="Obtener Información de Elemento", description="Obtiene la fecha, el lugar y la descripción de un elemento en un formato específico.")
-async def get_element_info(request: ElementInfoRequest):
-    text = request.texto.strip()
-    if not text:
-        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
-
-    # Crear una instancia del cliente de OpenAI
-    openai_client = OpenAI(api_key=api_key)
-
-    # Crear el mensaje para enviar al ChatBot
-    message = [
-        {
-            "role": "system",
-            "content": "rellena los datos siguiendo este formato: {Fecha: dd/mm/yyyy HH:MM, Lugar: lugar, QueSeRealiza: Realizacion} en caso que un valor no se encuentre dejarlo en blanco"
-        }
-    ]
-
-    # Agregar la entrada del usuario al mensaje
-    message.append({"role": "user", "content": text})
-
-    # Obtener la respuesta del ChatBot
-    completion = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=message
-    )
-
-    # Obtener la respuesta del ChatBot
-    assistant_response = completion.choices[0].message.content
-    # Limpiar la respuesta eliminando las llaves adicionales
-    assistant_response = assistant_response.replace("{", "").replace("}", "")
-
-    print (assistant_response)
-    # se obtiene :{Fecha: 23/11/2021, Lugar: Centro, QueSeRealiza: trabajar en el Banco del Tiempo}
-
-    # Separar la respuesta en categorías e informacion
-    
-    response_parts = assistant_response.split(', ')
-    categories = []
-    information = []
-
-    for part in response_parts:
-        category, info = part.split(': ')
-        categories.append(category.strip())
-        information.append(info.strip())
-
-    # Crear un diccionario con las categorías y porcentajes
-    result = dict(zip(categories, information))
-
-    return result
-
 # Define el endpoint para analilar dos posturas en desacuerdos
 @app.post("/desacuerdos", summary="Analizar Desacuerdo", description="Analiza dos posturas en un desacuerdo y determina si son opuestas o no.")
 async def analyze_disagreement(request: ClassificationRequest):
@@ -254,6 +204,62 @@ async def analyze_disagreement(request: ClassificationRequest):
     return {"postura1": postura1, "postura2": postura2}
     
 
-    
+# Define el endpoint para analilar y crear un compromiso
+@app.post("/compromiso", summary="Crear Compromiso", description="Crea un compromiso a partir de las condiciones de sasticfacción")
+async def create_commitment(request: ClassificationRequest):
+    text = request.texto.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
 
-    
+    # Crear una instancia del cliente de OpenAI
+    openai_client = OpenAI(api_key=api_key)
+
+    # Crear el mensaje para enviar al ChatBot
+    message = [
+        {
+            "role": "system",
+            "content": (
+                "Voy a proporcionarte una frase de compromiso y quiero que la descompongas en un formato JSON con las claves: "
+                "'quién', 'qué', 'cuándo', y 'dónde'. Si alguna parte falta, déjala como una cadena vacía. "
+                "Ejemplo de entrada: 'Juan va a hacer cambio en la base de datos mañana en la oficina'. "
+                "Ejemplo de salida: {\"quién\": \"Juan\", \"qué\": \"va a hacer cambio en la base de datos\", \"cuándo\": \"mañana\", \"dónde\": \"la oficina\"}."
+            )
+        }
+    ]
+
+    # Agregar la entrada del usuario al mensaje
+    message.append({"role": "user", "content": text})
+
+    # Obtener la respuesta del ChatBot
+    completion = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=message
+    )
+
+    # Obtener la respuesta del ChatBot
+    assistant_response = completion.choices[0].message.content
+    print(assistant_response)
+
+    # Parsear la respuesta como JSON
+    try:
+        data = json.loads(assistant_response)
+        compromiso = {
+            "quién": data.get("quién", "[[quién]]"),
+            "qué": data.get("qué", "[[qué]]"),
+            "cuándo": data.get("cuándo", "[[cuándo]]"),
+            "dónde": data.get("dónde", "[[dónde]]")
+        }
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="La respuesta del modelo no es un JSON válido")
+
+   # Verificar y asignar valores predeterminados si los campos están vacíos
+    compromiso['quién'] = "[Quien]" if not compromiso['quién'] else compromiso['quién']
+    compromiso['qué'] = "[Que]" if not compromiso['qué'] else compromiso['qué']
+    compromiso['cuándo'] = "[Cuando]" if not compromiso['cuándo'] else compromiso['cuándo']
+    compromiso['dónde'] = "[Donde]" if not compromiso['dónde'] else compromiso['dónde']
+
+    # Construir el texto del compromiso
+    compromiso_texto = f"{compromiso['quién']} {compromiso['qué']} {compromiso['cuándo']} en {compromiso['dónde']}."
+
+    return {"compromiso": compromiso_texto}
+
