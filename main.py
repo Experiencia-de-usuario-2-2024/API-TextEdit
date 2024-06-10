@@ -28,6 +28,14 @@ api_key = os.getenv("OPENAI_API_KEY")
 # Configuración de CORS
 origins = [
     "http://localhost:3001",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost",
+    "https://localhost",
+    "https://localhost:3001",
+    "https://localhost:3000",
+    "https://localhost:8000",
+    
     # Añade aquí otros orígenes que necesites permitir
 ]
 
@@ -202,6 +210,49 @@ async def get_element_info(request: ElementInfoRequest):
     result = dict(zip(categories, information))
 
     return result
+
+# Define el endpoint para analilar dos posturas en desacuerdos
+@app.post("/desacuerdos", summary="Analizar Desacuerdo", description="Analiza dos posturas en un desacuerdo y determina si son opuestas o no.")
+async def analyze_disagreement(request: ClassificationRequest):
+    text = request.texto.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
+
+    # Crear una instancia del cliente de OpenAI
+    openai_client = OpenAI(api_key=api_key)
+
+    # Crear el mensaje para enviar al ChatBot
+    message = [
+        {
+            "role": "system",
+            "content": "Indica cuales son las dos posturas en desacuerdo en el formato 'postura1: postura2"
+        }
+    ]
+
+    # Agregar la entrada del usuario al mensaje
+    message.append({"role": "user", "content": text})
+
+    # Obtener la respuesta del ChatBot
+    completion = openai_client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=message
+    )
+
+    # Obtener la respuesta del ChatBot
+    assistant_response = completion.choices[0].message.content
+
+    # Verificar si se proporcionaron ambas posturas en la respuesta del asistente
+    posturas = assistant_response.split(":")
+    if len(posturas) != 2:
+        return {"error": "Debes proporcionar exactamente dos posturas en desacuerdo separadas por ':'"}
+
+    # Guardar las posturas como postura1 y postura2 
+    postura1 = posturas[0].strip()
+    postura2 = posturas[1].strip()
+
+    # retornar las posturas
+    return {"postura1": postura1, "postura2": postura2}
+    
 
     
 
