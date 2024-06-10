@@ -43,3 +43,21 @@ def test_create_commitment():
     json_response = response.json()
     assert "compromiso" in json_response
 
+def test_empty_text_sentiment():
+    response = client.post("/sentiment", json={"text": ""})
+    assert response.status_code == 400
+
+def test_nonexistent_text_sentiment():
+    response = client.post("/sentiment", json={})
+    assert response.status_code == 422
+
+def test_multiple_simultaneous_requests():
+    # Simulate sending multiple simultaneous requests to the API
+    responses = []
+    for _ in range(10):
+        response = client.post("/sentiment", json={"text": "This is a test"})
+        responses.append(response)
+    
+    # Check that all responses are successful
+    for response in responses:
+        assert response.status_code == 200
