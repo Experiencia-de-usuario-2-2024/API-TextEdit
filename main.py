@@ -24,6 +24,16 @@ sentiment_pipeline = pipeline("sentiment-analysis", model="cardiffnlp/twitter-xl
 # Carga del modelo para análisis de emociones
 classifier = pipeline("text-classification", model="bhadresh-savani/bert-base-uncased-emotion", top_k=None)
 
+# Define el diccionario de traducción de emociones
+emotion_translation = {
+    'sadness': 'tristeza',
+    'joy': 'alegría',
+    'love': 'amor',
+    'anger': 'enojo',
+    'fear': 'miedo',
+    'surprise': 'sorpresa'
+}
+
 # Configuración del cliente de OpenAI
 api_key = os.getenv("OPENAI_API_KEY")
 
@@ -107,14 +117,14 @@ async def analyze_emotions(request: EmotionRequest):
     # Simplifica la estructura de la respuesta
     simplified_prediction = prediction[0]  # Elimina el primer nivel de la lista
 
+    # Traduce las etiquetas de emoción al español
+    translated_prediction = [{**emotion, 'label': emotion_translation[emotion['label']]} for emotion in simplified_prediction]
+    
     # Encuentra la emoción con el mayor puntaje
-    max_emotion = max(simplified_prediction, key=lambda x: x['score'])
+    max_emotion = max(translated_prediction, key=lambda x: x['score'])
     
     return {"emoción_principal": max_emotion}
     
-
-    
-
 
 @app.post("/classify", summary="Clasificar Texto", description="Clasifica el texto proporcionado en compromiso, duda, acuerdo o desacuerdo con porcentajes.")
 async def classify_text(request: ClassificationRequest):
