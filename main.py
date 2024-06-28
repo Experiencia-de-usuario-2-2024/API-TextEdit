@@ -29,7 +29,7 @@ emotion_translation = {
     'sadness': 'tristeza',
     'joy': 'alegría',
     'love': 'amor',
-    'anger': 'enojo',
+    'anger': 'enfado',
     'fear': 'miedo',
     'surprise': 'sorpresa'
 }
