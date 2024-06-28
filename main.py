@@ -140,7 +140,7 @@ async def classify_text(request: ClassificationRequest):
     message = [
         {
             "role": "system",
-            "content": "Indifico si es un compromiso, una duda, un acuerdo o un desacuerdo y dime con porcentajes cuanto corresponde en cada categoria en el formato 'compromiso: 0%, duda: 0%, acuerdo: 0%, desacuerdo: 0%'"
+            "content": "Dado el siguiente texto, clasifícalo en una de las siguientes categorías: 'Compromiso', 'Duda', 'Acuerdo', 'Desacuerdo', o 'Texto Libre' y dime con porcentajes cuánto corresponde a cada categoría en el formato 'compromiso: 0%, duda: 0%, acuerdo: 0%, desacuerdo: 0%, texto libre: 0%'.\n\n1. Compromiso: Indica una promesa o una declaración de intención.\n2. Duda: Expresa incertidumbre o pregunta sobre algo.\n3. Acuerdo: Muestra conformidad o aceptación de una idea.\n4. Desacuerdo: Manifiesta una opinión contraria a una idea.\n5. Texto Libre: Cualquier texto que no se clasifique en las categorías anteriores.\n\nEjemplos:\n\nTexto: 'Voy a enviar el informe mañana.'\nCategoría: Compromiso\n\nTexto: '¿Estás seguro de esto?'\nCategoría: Duda\n\nTexto: 'Estoy de acuerdo con lo que dijiste.'\nCategoría: Acuerdo\n\nTexto: 'No creo que eso funcione.'\nCategoría: Desacuerdo\n\nTexto: 'El clima hoy es agradable.'\nCategoría: Texto Libre\n\nTexto: 'Leí tu mensaje.'\nCategoría: Texto Libre"
         }
     ]
 
