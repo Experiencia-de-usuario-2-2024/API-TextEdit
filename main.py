@@ -185,7 +185,7 @@ async def analyze_disagreement(request: ClassificationRequest):
     message = [
         {
             "role": "system",
-            "content": "Indica cuales son las dos posturas en desacuerdo en el formato 'postura1: postura2"
+            "content": "Indica cuales son las dos posturas en desacuerdo en formato JSON  con las claves 'postura1' y 'postura2'. Ejemplo: {'postura1': 'La tierra es plana', 'postura2': 'La tierra es redonda'}"
         }
     ]
 
@@ -200,19 +200,21 @@ async def analyze_disagreement(request: ClassificationRequest):
 
     # Obtener la respuesta del ChatBot
     assistant_response = completion.choices[0].message.content
-
-    # Verificar si se proporcionaron ambas posturas en la respuesta del asistente
-    posturas = assistant_response.split(":")
-    if len(posturas) != 2:
-        return {"error": "Debes proporcionar exactamente dos posturas en desacuerdo separadas por ':'"}
-
-    # Guardar las posturas como postura1 y postura2 
-    postura1 = posturas[0].strip()
-    postura2 = posturas[1].strip()
-
-    # retornar las posturas
-    return {"postura1": postura1, "postura2": postura2}
+    print(assistant_response)
+    # Parsear la respuesta como JSON
+    try:
+        data = json.loads(assistant_response)
+        postura1 = data.get("postura1", "[[postura1]]")
+        postura2 = data.get("postura2", "[[postura2]]")
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="La respuesta del modelo no es un JSON válido")
     
+    # Verificar y asignar valores predeterminados si los campos están vacíos
+    postura1 = "" if not postura1 else postura1
+    postura2 = "" if not postura2 else postura2
+
+    # Retornar las posturas
+    return {"postura1": postura1, "postura2": postura2}
 
 # Define el endpoint para analilar y crear un compromiso
 @app.post("/compromiso", summary="Crear Compromiso", description="Crea un compromiso a partir de las condiciones de sasticfacción")
