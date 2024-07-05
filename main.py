@@ -94,10 +94,10 @@ async def analyze_sentiment(request: SentimentRequest):
     score = result[0]['score']
 
     # Mapear las etiquetas del modelo a términos más claros
-    if sentiment == "LABEL_0":
-        sentiment = "NEGATIVO"
-    elif sentiment == "LABEL_1":
-        sentiment = "POSITIVO"
+    if sentiment == "negative":
+        sentiment = "negativo"
+    elif sentiment == "positive":
+        sentiment = "positivo"
 
     return {"sentiment": sentiment, "score": score}
 
