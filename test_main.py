@@ -61,3 +61,80 @@ def test_multiple_simultaneous_requests():
     # Check that all responses are successful
     for response in responses:
         assert response.status_code == 200
+
+def test_empty_text_emotions():
+    response = client.post("/emotions", json={"texto": ""})
+    assert response.status_code == 400
+
+def test_nonexistent_text_emotions():
+    response = client.post("/emotions", json={})
+    assert response.status_code == 422
+
+def test_empty_text_classify():
+    response = client.post("/classify", json={"texto": ""})
+    assert response.status_code == 400
+
+def test_nonexistent_text_classify():
+    response = client.post("/classify", json={})
+    assert response.status_code == 422
+
+def test_empty_text_disagreement():
+    response = client.post("/desacuerdos", json={"texto": ""})
+    assert response.status_code == 400
+
+def test_nonexistent_text_disagreement():
+    response = client.post("/desacuerdos", json={})
+    assert response.status_code == 422
+
+def test_empty_text_commitment():
+    response = client.post("/compromiso", json={"texto": ""})
+    assert response.status_code == 400
+
+def test_nonexistent_text_commitment():
+    response = client.post("/compromiso", json={})
+    assert response.status_code == 422
+
+def test_long_text_sentiment():
+    long_text = "Estoy muy feliz " * 50  # Ajusta según tus necesidades
+    response = client.post("/sentiment", json={"text": long_text})
+    assert response.status_code == 200
+    json_response = response.json()
+    assert "sentiment" in json_response
+    assert "score" in json_response
+
+def test_long_text_emotions():
+    long_text = "Estoy muy feliz. " * 50  # Ajusta según tus necesidades
+    response = client.post("/emotions", json={"texto": long_text})
+    assert response.status_code == 200
+    json_response = response.json()
+    assert "emoción_principal" in json_response
+
+
+def test_non_english_text_emotions():
+    response = client.post("/emotions", json={"texto": "Je suis très heureux"})
+    assert response.status_code == 200
+    json_response = response.json()
+    assert "emoción_principal" in json_response
+
+def test_special_characters_classify():
+    response = client.post("/classify", json={"texto": "@#$%^&*()"})
+    assert response.status_code == 200
+    json_response = response.json()
+    assert "compromiso" in json_response
+    assert "duda" in json_response
+    assert "acuerdo" in json_response
+    assert "desacuerdo" in json_response
+
+def test_empty_text_responses():
+    endpoints = [
+        ("/sentiment", {"text": ""}),
+        ("/emotions", {"texto": ""}),
+        ("/classify", {"texto": ""}),
+        ("/desacuerdos", {"texto": ""}),
+        ("/compromiso", {"texto": ""})
+    ]
+    
+    for endpoint, payload in endpoints:
+        response = client.post(endpoint, json=payload)
+        assert response.status_code == 400
+
