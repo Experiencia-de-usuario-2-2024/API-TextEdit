@@ -271,7 +271,7 @@ async def create_commitment(request: ClassificationRequest):
     compromiso['dónde'] = "[Donde]" if not compromiso['dónde'] else compromiso['dónde']
 
     # Construir el texto del compromiso
-    compromiso_texto = f"{compromiso['quién']} {compromiso['qué']} {compromiso['cuándo']} en {compromiso['dónde']}."
+    compromiso_texto = f"{compromiso['quién']}, {compromiso['qué']} antes del {compromiso['cuándo']} en {compromiso['dónde']}."
 
     return {"compromiso": compromiso_texto}
 
