@@ -5,7 +5,7 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copiar los archivos de requirements.txt al contenedor
-COPY requirements.txt requirements.txt
+COPY requirements.txt .
 
 # Instalar las dependencias necesarias
 RUN pip install --no-cache-dir -r requirements.txt
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3030
 
 # Configurar el comando por defecto para ejecutar la aplicación con Uvicorn
-CMD ["uvicorn", "main:app"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3030"]

@@ -281,4 +281,4 @@ async def create_commitment(request: ClassificationRequest):
 # Asegúrate de que este bloque está al final de tu script
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=3030)
