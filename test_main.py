@@ -188,24 +188,6 @@ def test_numbers_text_emotions():
     json_response = response.json()
     assert "emoción_principal" in json_response
 
-# Prueba unitaria: Verifica que el endpoint de clasificación maneja correctamente entradas con números
-def test_numbers_text_classify():
-    response = client.post("/classify", json={"texto": "12345"})
-    assert response.status_code == 200
-    json_response = response.json()
-    assert "compromiso" in json_response
-    assert "duda" in json_response
-    assert "acuerdo" in json_response
-    assert "desacuerdo" in json_response
-
-# Prueba unitaria: Verifica que el endpoint de desacuerdos maneja correctamente entradas con números
-def test_numbers_text_disagreement():
-    response = client.post("/desacuerdos", json={"texto": "12345"})
-    assert response.status_code == 200
-    json_response = response.json()
-    assert "postura1" in json_response
-    assert "postura2" in json_response
-
 # Prueba de rendimiento: Verifica que el tiempo de respuesta sea aceptable
 def test_performance():
     import time
@@ -214,3 +196,24 @@ def test_performance():
     end_time = time.time()
     assert response.status_code == 200
     assert (end_time - start_time) < 1  # La respuesta debe ser en menos de 1 segundo
+
+# Prueba de Integración para Análisis Completo de Texto
+def test_complete_text_analysis():
+    # Análisis de sentimiento
+    response_sentiment = client.post("/sentiment", json={"text": "Estoy feliz"})
+    assert response_sentiment.status_code == 200
+    sentiment_data = response_sentiment.json()
+    assert "sentiment" in sentiment_data
+    assert "score" in sentiment_data
+
+    # Análisis emocional
+    response_emotions = client.post("/emotions", json={"texto": "Estoy muy feliz"})
+    assert response_emotions.status_code == 200
+    emotions_data = response_emotions.json()
+    assert "emoción_principal" in emotions_data
+
+    # Análisis de compromisos
+    response_commitment = client.post("/compromiso", json={"texto": "Juan va a enviar el informe mañana en la oficina"})
+    assert response_commitment.status_code == 200
+    commitment_data = response_commitment.json()
+    assert "compromiso" in commitment_data

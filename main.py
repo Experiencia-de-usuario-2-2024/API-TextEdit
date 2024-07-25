@@ -39,6 +39,8 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 # Configuración de CORS
 origins = [
+    "*",
+    "http://localhost:3002",
     "http://localhost:3001",
     "http://localhost:3000",
     "http://localhost:8000",
@@ -47,7 +49,6 @@ origins = [
     "https://localhost:3001",
     "https://localhost:3000",
     "https://localhost:8000",
-    
     # Añade aquí otros orígenes que necesites permitir
 ]
 
@@ -275,3 +276,9 @@ async def create_commitment(request: ClassificationRequest):
 
     return {"compromiso": compromiso_texto}
 
+
+
+# Asegúrate de que este bloque está al final de tu script
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
