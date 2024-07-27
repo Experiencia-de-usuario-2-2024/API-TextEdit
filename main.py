@@ -41,7 +41,7 @@ api_key = os.getenv("OPENAI_API_KEY")
 origins = [
     "*",
     "http://localhost:3002",
-    "http://localhost:3001",
+    "http://localhost:3003",
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost",
@@ -281,4 +281,4 @@ async def create_commitment(request: ClassificationRequest):
 # Asegúrate de que este bloque está al final de tu script
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3030)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

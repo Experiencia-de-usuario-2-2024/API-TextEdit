@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Exponer el puerto que la aplicación usará
-EXPOSE 3030
+EXPOSE 8000
 
 # Configurar el comando por defecto para ejecutar la aplicación con Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3030"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
