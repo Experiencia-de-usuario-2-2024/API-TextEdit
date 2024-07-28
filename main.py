@@ -60,6 +60,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Define la constante para el mensaje de error
+EMPTY_TEXT_ERROR = "El texto no puede estar vacío"
+
+# Define la constante para el mensaje de error json
+JSON_ERROR = "La respuesta del modelo no es un JSON válido"
+# Modelo de GPT-3.5-turbo
+GPT_MODEL = "gpt-3.5-turbo"
+# Claves para el compromiso
+KEY_QUIEN = "quién"
+KEY_QUE = "qué"
+KEY_CUANDO = "cuándo"
+KEY_DONDE = "dónde"
+
+
 # Modelos para la entrada de datos
 class SentimentRequest(BaseModel):
     text: str
@@ -87,7 +101,7 @@ def read_root(request: Request):
 async def analyze_sentiment(request: SentimentRequest):
     text = request.text.strip()
     if not text:
-        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
+        raise HTTPException(status_code=400, detail=EMPTY_TEXT_ERROR)
 
     # Uso del modelo para predecir el sentimiento de manera asíncrona
     result = await asyncio.get_event_loop().run_in_executor(None, lambda: sentiment_pipeline(text))
@@ -107,7 +121,7 @@ async def analyze_sentiment(request: SentimentRequest):
 async def analyze_emotions(request: EmotionRequest):
     text = request.texto.strip()
     if not text:
-        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
+        raise HTTPException(status_code=400, detail=EMPTY_TEXT_ERROR)
 
     # Traduce el texto de español a inglés
     translated_text = GoogleTranslator(source='auto', target='en').translate(text)
@@ -131,7 +145,7 @@ async def analyze_emotions(request: EmotionRequest):
 async def classify_text(request: ClassificationRequest):
     text = request.texto.strip()
     if not text:
-        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
+        raise HTTPException(status_code=400, detail=EMPTY_TEXT_ERROR)
 
     # Crear una instancia del cliente de OpenAI
     openai_client = OpenAI(api_key=api_key)
@@ -150,7 +164,7 @@ async def classify_text(request: ClassificationRequest):
 
     # Obtener la respuesta del ChatBot
     completion = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=GPT_MODEL,
         messages=message
     )
 
@@ -177,7 +191,7 @@ async def classify_text(request: ClassificationRequest):
 async def analyze_disagreement(request: ClassificationRequest):
     text = request.texto.strip()
     if not text:
-        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
+        raise HTTPException(status_code=400, detail=EMPTY_TEXT_ERROR)
 
     # Crear una instancia del cliente de OpenAI
     openai_client = OpenAI(api_key=api_key)
@@ -195,7 +209,7 @@ async def analyze_disagreement(request: ClassificationRequest):
 
     # Obtener la respuesta del ChatBot
     completion = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=GPT_MODEL,
         messages=message
     )
 
@@ -208,7 +222,7 @@ async def analyze_disagreement(request: ClassificationRequest):
         postura1 = data.get("postura1", "[[postura1]]")
         postura2 = data.get("postura2", "[[postura2]]")
     except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="La respuesta del modelo no es un JSON válido")
+        raise HTTPException(status_code=500, detail=JSON_ERROR )
     
     # Verificar y asignar valores predeterminados si los campos están vacíos
     postura1 = "" if not postura1 else postura1
@@ -222,7 +236,7 @@ async def analyze_disagreement(request: ClassificationRequest):
 async def create_commitment(request: ClassificationRequest):
     text = request.texto.strip()
     if not text:
-        raise HTTPException(status_code=400, detail="El texto no puede estar vacío")
+        raise HTTPException(status_code=400, detail=EMPTY_TEXT_ERROR)
 
     # Crear una instancia del cliente de OpenAI
     openai_client = OpenAI(api_key=api_key)
@@ -245,7 +259,7 @@ async def create_commitment(request: ClassificationRequest):
 
     # Obtener la respuesta del ChatBot
     completion = openai_client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=GPT_MODEL,
         messages=message
     )
 
@@ -257,22 +271,22 @@ async def create_commitment(request: ClassificationRequest):
     try:
         data = json.loads(assistant_response)
         compromiso = {
-            "quién": data.get("quién", "[[quién]]"),
-            "qué": data.get("qué", "[[qué]]"),
-            "cuándo": data.get("cuándo", "[[cuándo]]"),
-            "dónde": data.get("dónde", "[[dónde]]")
+            KEY_QUIEN: data.get(KEY_QUIEN, ""),
+            KEY_QUE: data.get(KEY_QUE, ""),
+            KEY_CUANDO: data.get(KEY_CUANDO, ""),
+            KEY_DONDE: data.get(KEY_DONDE, "")
         }
     except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="La respuesta del modelo no es un JSON válido")
+        raise HTTPException(status_code=500, detail=JSON_ERROR )
 
    # Verificar y asignar valores predeterminados si los campos están vacíos
-    compromiso['quién'] = "[Quien]" if not compromiso['quién'] else compromiso['quién']
-    compromiso['qué'] = "[Que]" if not compromiso['qué'] else compromiso['qué']
-    compromiso['cuándo'] = "[Cuando]" if not compromiso['cuándo'] else compromiso['cuándo']
-    compromiso['dónde'] = "[Donde]" if not compromiso['dónde'] else compromiso['dónde']
+    compromiso[KEY_QUIEN] = "[Quien]" if not compromiso[KEY_QUIEN] else compromiso[KEY_QUIEN]
+    compromiso[KEY_QUE] = "[Que]" if not compromiso[KEY_QUE] else compromiso[KEY_QUE]
+    compromiso[KEY_CUANDO] = "[Cuando]" if not compromiso[KEY_CUANDO] else compromiso[KEY_CUANDO]
+    compromiso[KEY_DONDE] = "[Donde]" if not compromiso[KEY_DONDE] else compromiso[KEY_DONDE]
 
     # Construir el texto del compromiso
-    compromiso_texto = f"{compromiso['quién']}, {compromiso['qué']} antes del {compromiso['cuándo']} en {compromiso['dónde']}."
+    compromiso_texto = f"{compromiso[KEY_QUIEN]}, {compromiso[KEY_QUE]} antes del {compromiso[KEY_CUANDO]} en {compromiso[KEY_DONDE]}."
 
     return {"compromiso": compromiso_texto}
 
