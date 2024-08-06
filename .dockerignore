@@ -1,0 +1,27 @@
+# Ignorar archivos y directorios innecesarios
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+
+# Ignorar archivos de configuración de IDE
+.vscode/
+.idea/
+*.iml
+
+# Ignorar archivos de control de versiones
+.git/
+.gitignore
+
+# Ignorar archivos de Docker
+Dockerfile
+docker-compose.yml
+
+# Ignorar otros archivos innecesarios
+node_modules/
+dist/
+build/
+venv/

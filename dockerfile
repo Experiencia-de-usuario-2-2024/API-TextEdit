@@ -7,16 +7,15 @@ WORKDIR /app
 # Copiar los archivos de requirements.txt al contenedor
 COPY requirements.txt .
 
-# Instalar las dependencias necesarias del sistema
+# Instalar las dependencias necesarias del sistema y Python
 RUN apt-get update && \
-    apt-get install -y build-essential libssl-dev libffi-dev python3-dev && \
-    apt-get clean
+    apt-get install -y --no-install-recommends build-essential libssl-dev libffi-dev python3-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Instalar las dependencias de Python
-RUN pip install --upgrade pip
-
-# Instalar las dependencias necesarias
-RUN pip install --no-cache-dir -r requirements.txt
+# Deshabilitar las opciones de OneDNN
+ENV DNNL_DISABLE_CHECKS=1
 
 # Copiar el resto de la aplicación al contenedor
 COPY . .
