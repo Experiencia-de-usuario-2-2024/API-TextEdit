@@ -290,6 +290,40 @@ async def create_commitment(request: ClassificationRequest):
 
     return {"compromiso": compromiso_texto}
 
+@app.post("/redactar-compromiso", summary="Redactar Compromiso", description="Redacta un compromiso a partir del texto proporcionado en el formato '[persona] va a [hacer algo] antes de la fecha [fecha] en [lugar]'.")
+async def redactar_compromiso(request: ClassificationRequest):
+    text = request.texto.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail=EMPTY_TEXT_ERROR)
+
+    # Crear una instancia del cliente de OpenAI
+    openai_client = OpenAI(api_key=api_key)
+
+    # Crear el mensaje para enviar al ChatBot
+    message = [
+        {
+            "role": "system",
+            "content": (
+                "Redacta el siguiente texto en el formato '[persona] va a [hacer algo] antes de la fecha [fecha] en [lugar]'. "
+                "Por ejemplo, si el texto es 'Vale Puente, voy a pasear a mi perrita antes del antes del 2024-08-21 en en la calle', "
+                "Vale Puente, va a pasear a su perrita antes del 21 de agosto del 2024 en la calle'."
+            )
+        }
+    ]
+
+    # Agregar la entrada del usuario al mensaje
+    message.append({"role": "user", "content": text})
+
+    # Obtener la respuesta del ChatBot
+    completion = openai_client.chat.completions.create(
+        model=GPT_MODEL,
+        messages=message
+    )
+
+    # Obtener la respuesta del ChatBot
+    assistant_response = completion.choices[0].message.content.strip()
+
+    return {"compromiso_redactado": assistant_response}
 
 
 # Asegúrate de que este bloque está al final de tu script
