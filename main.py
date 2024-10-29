@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from deep_translator import GoogleTranslator
 from fastapi.middleware.cors import CORSMiddleware
-
+import uvicorn
 from transformers import pipeline
 import asyncio
 import os
@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import json
 from fastapi.responses import JSONResponse
-
+import argparse
 import re
 
 # Cargar variables de entorno desde el archivo .env
@@ -326,7 +326,9 @@ async def redactar_compromiso(request: ClassificationRequest):
     return {"compromiso_redactado": assistant_response}
 
 
-# Asegúrate de que este bloque está al final de tu script
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", 8000))
+    
+    uvicorn.run("main:app", host=host, port=port, reload=True)
+    # se ejecuta ahora con python main.py
